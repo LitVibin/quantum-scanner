@@ -2,16 +2,16 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import pandas_ta as ta
-import requests
 import warnings
 warnings.filterwarnings("ignore")
 
 # ====================== CONFIG ======================
-APP_TITLE = "Weekly Trend Scanner"
-APP_ICON = "📈"
-TABLE_HEIGHT = 700
+st.set_page_config(page_title="Weekly Trend Scanner", page_icon="📈", layout="wide")
 
-# Quantum Trend-parametrar (exakt som din Pine Script)
+st.title("📊 Weekly Trend Scanner")
+st.markdown("**Quantum Super – med exakta färger & bred marknad**")
+
+# Quantum Trend-parametrar
 LSMA_LENGTH = 72
 ALMA_LENGTH = 33
 ALMA_OFFSET = 0.85
@@ -23,22 +23,16 @@ SHOW_TOP = 50
 MIN_DURATION = 1
 MAX_DURATION = 50
 
-# Ticker-listor
+# Ticker-listor med stor fallback
+SP500_FALLBACK = ["AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","BRK-B","LLY","AVGO","JPM","V","MA","XOM","UNH","JNJ","PG","HD","MRK","COST","ABBV","AMD","NFLX","PEP","KO","CRM","ADBE","TMO","MCD","CSCO","ACN","ABT","LIN","WMT","INTU","QCOM","NOW","AMGN","ISRG","BKNG","SPGI","INTC","VZ","UNP","HON","PFE","RTX","CAT","GS","MS","BLK","AXP","SYK","ELV","MDT","PLD","ETN","DE","SCHW","REGN","LMT","T","MO","BMY","GILD","ADI","PANW","KLAC","SNPS","CDNS","ANET","ADP","FI","CME","ICE","ZTS","SHW","ITW","EOG","SLB","SO","DUK","NEE","PNC","USB","TGT","TJX","CSX","CL","MMM","GE","HCA","EMR","BDX","APD","WM","AON","MPC","PSX","VLO","OXY","COP","CVX","HAL","BKR","FANG","DVN","EQT","MRO","APA"]
 CRYPTO_TICKERS = ["BTC-USD","ETH-USD","SOL-USD","BNB-USD","XRP-USD","ADA-USD","DOGE-USD","AVAX-USD","TRX-USD","DOT-USD","LINK-USD","MATIC-USD","TON11419-USD","SHIB-USD","LTC-USD","BCH-USD","UNI7083-USD","XLM-USD","ATOM-USD","ETC-USD","ICP-USD","FIL-USD","APT21794-USD","HBAR-USD","ARB11841-USD","NEAR-USD","OP-USD","CRO-USD"]
 SWEDISH_TICKERS = ["^OMXS30","ABB.ST","ALFA.ST","ASSA-B.ST","ATCO-A.ST","ATCO-B.ST","AZN.ST","BOL.ST","ELUX-B.ST","ERIC-B.ST","ESSITY-B.ST","EVO.ST","GETI-B.ST","HEXA-B.ST","HM-B.ST","INVE-B.ST","KINV-B.ST","NDA-SE.ST","SAND.ST","SBB-B.ST","SEB-A.ST","SHB-A.ST","SINCH.ST","SKF-B.ST","SSAB-A.ST","SWED-A.ST","TEL2-B.ST","TELIA.ST","VOLV-B.ST"]
 COMMODITIES_TICKERS = ["GC=F","SI=F","CL=F","NG=F","HG=F","PL=F"]
 MAJOR_INDICES = ["^DJI","^IXIC","^RUT","^VIX","^GSPC","^FTSE","^N225"]
 
-# Stor fallback för S&P 500 (så vi alltid får många marknader)
-SP500_FALLBACK = [
-    "AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","BRK-B","LLY","AVGO","JPM","V","MA","XOM","UNH","JNJ","PG","HD","MRK","COST","ABBV","AMD","NFLX","PEP","KO","CRM","ADBE","TMO","MCD","CSCO","ACN","ABT","LIN","WMT","INTU","QCOM","NOW","AMGN","ISRG","BKNG","SPGI","INTC","VZ","UNP","HON","PFE","RTX","CAT","GS","MS","BLK","AXP","SYK","ELV","MDT","PLD","ETN","DE","SCHW","REGN","LMT","T","MO","BMY","GILD","ADI","PANW","KLAC","SNPS","CDNS","ANET","ADP","FI","CME","ICE","ZTS","SHW","ITW","EOG","SLB","SO","DUK","NEE","PNC","USB","TGT","TJX","CSX","CL","MMM","GE","HCA","EMR","BDX","APD","WM","AON","MPC","PSX","VLO","OXY","COP","CVX","HAL","BKR","FANG","DVN","EQT","MRO","APA"
-]
-
 def get_all_tickers():
-    all_tickers = SP500_FALLBACK + CRYPTO_TICKERS + SWEDISH_TICKERS + COMMODITIES_TICKERS + MAJOR_INDICES
-    unique = sorted(set(all_tickers))
-    print(f"✅ Scannar {len(unique)} marknader totalt")
-    return unique
+    all_t = SP500_FALLBACK + CRYPTO_TICKERS + SWEDISH_TICKERS + COMMODITIES_TICKERS + MAJOR_INDICES
+    return sorted(set(all_t))
 
 # ====================== SCANNER ======================
 def normalize_columns(df):
@@ -80,7 +74,7 @@ def scan_trends(timeframe="weekly"):
             if not {"open","high","low","close"}.issubset(data.columns):
                 continue
 
-            # QUANTUM TREND – exakt som din Pine Script
+            # QUANTUM TREND
             lsma = ta.linreg(data["close"], length=LSMA_LENGTH, offset=0)
             trend_base = ta.alma(lsma, length=ALMA_LENGTH, offset=ALMA_OFFSET, sigma=ALMA_SIGMA)
             atr = ta.atr(data["high"], data["low"], data["close"], length=ATR_LENGTH)
@@ -142,12 +136,7 @@ def scan_trends(timeframe="weekly"):
         return df
     return pd.DataFrame()
 
-# ====================== STREAMLIT APP ======================
-st.set_page_config(page_title=APP_TITLE, page_icon=APP_ICON, layout="wide")
-
-st.title("📊 Weekly Trend Scanner")
-st.markdown("**Quantum Super – med exakta färger & bred marknad**")
-
+# ====================== APP ======================
 timeframe = st.radio("Välj tidsram", ["Veckobasis", "Dagbasis"], horizontal=True)
 mode = "weekly" if timeframe == "Veckobasis" else "daily"
 
@@ -158,7 +147,7 @@ if "data" not in st.session_state or st.session_state.get("last_mode") != mode:
 
 df = st.session_state.data
 
-st.success(f"✅ Scannade **{len(df)}** marknader | Visar topp {len(df)} trender")
+st.success(f"✅ Scannade **{len(df)}** marknader")
 
 def color_row(row):
     color = "#00E5FF20" if row["Trend"] == "STRONG UP-TREND" else "#D500F920"
@@ -178,17 +167,9 @@ with tab1:
                 st.clipboard(prompt)
                 st.success("✅ Kopierad!")
 
-with tab2:
-    st.subheader("₿ Krypto")
-    st.dataframe(df[df['Ticker'].str.contains("-USD")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
-
-with tab3:
-    st.subheader("📈 Aktier")
-    st.dataframe(df[~df['Ticker'].str.contains("-USD") & ~df['Ticker'].str.contains("=F")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
-
-with tab4:
-    st.subheader("🪙 Råvaror & Index")
-    st.dataframe(df[df['Ticker'].str.contains("=F") | df['Ticker'].str.startswith("^")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
+with tab2: st.subheader("₿ Krypto"); st.dataframe(df[df['Ticker'].str.contains("-USD")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
+with tab3: st.subheader("📈 Aktier"); st.dataframe(df[~df['Ticker'].str.contains("-USD") & ~df['Ticker'].str.contains("=F")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
+with tab4: st.subheader("🪙 Råvaror & Index"); st.dataframe(df[df['Ticker'].str.contains("=F") | df['Ticker'].str.startswith("^")].style.apply(color_row, axis=1), column_config={"TV_URL": st.column_config.LinkColumn("Länk", display_text="🔗 TradingView")}, use_container_width=True, height=700, hide_index=True)
 
 st.divider()
 st.markdown("Byggd med ❤️ för trendbaserad trading – Quantum Super (en fil)")
