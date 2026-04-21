@@ -1,6 +1,7 @@
-streamlit==1.55.0
-pandas==2.3.3
-numpy==2.3.4
-yfinance==0.2.66
-lxml==6.0.2
-html5lib==1.1
+streamlit
+pandas
+numpy
+yfinance
+lxml
+html5lib
+plotly
