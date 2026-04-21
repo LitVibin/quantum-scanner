@@ -3,3 +3,5 @@ pandas
 yfinance
 pandas_ta
 requests
+lxml
+html5lib
